@@ -1,16 +1,24 @@
 # Serverless - AWS Node.js Typescript
 
 This project is final test that RocketSeat Ignite NodeJS
+- It is necessary to install serverless 
+- You can install serverless using this link 
+- https://www.serverless.com/framework/docs/getting-started
 
 ## Installation dependences
 - yarn or npm instal
 
-## Running Local
-- yarn dynamodb:start
-> This command will be initialize the dynamodb local.
+## Install Dynamodb local
+- serverless dynamodb install
 
+## Running DynamoDB Local
+- yarn dynamo:start
+> This command will lauch the dynamodb local.
+![image](https://user-images.githubusercontent.com/19477370/135466279-6f88aa0d-b56d-4124-8940-5e3fd9b07ed0.png)
+
+### Open other terminal and run this.
 - yarn dev
-> It will be initialize application
+> It will lauch the application
 
 ![image](https://user-images.githubusercontent.com/19477370/135462599-9c2f492e-4822-4c5b-9494-9ab221985ba0.png)
 
