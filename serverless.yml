@@ -1,0 +1,125 @@
+service: concepts-serverless-todo
+
+plugins:
+  - serverless-webpack
+  - serverless-offline
+  - serverless-dynamodb-local
+
+custom:
+  webpack:
+    webpackConfig: ./webpack.config.js
+    includeModules: true
+  dynamodb:
+    stages:
+      - dev
+      - local
+    start:
+      port: 8000
+      inMemory: true
+      migrate: true
+
+provider:
+  lambdaHashingVersion: "20201221"
+  name: aws
+  runtime: nodejs14.x
+  region: us-east-1
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:*
+      Resource:
+        - "*"
+
+functions:
+  users:
+    handler: src/functions/users/create.handle
+    events:
+      - http:
+          path: /users
+          cors: true
+          method: post
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+          - dynamodb:PutItem
+          - dynamodb:UpdateItem
+        Resource: "arn:aws:dynamodb:${self.provider.region}:*:table/users"
+  create_todos:
+    handler: src/functions/todos/create.handle
+    events:
+      - http:
+          path: /todos/{userId}
+          cors: true
+          method: post
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+          - dynamodb:PutItem
+        Resource: "arn:aws:dynamodb:${self.provider.region}:*:table/todos"
+  list_todos:
+    handler: src/functions/todos/list.handle
+    events:
+      - http:
+          path: /todos/{userId}
+          cors: true
+          method: get
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+        Resource: "arn:aws:dynamodb:${self.provider.region}:*:table/todos"
+  done_todo:
+    handler: src/functions/todos/done.handle
+    events:
+      - http:
+          path: /todos/{userId}/done/{todoId}
+          cors: true
+          method: patch
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+          - dynamodb:UpdateItem
+        Resource: "arn:aws:dynamodb:${self.provider.region}:*:table/todos"
+  current_todo:
+    handler: src/functions/todos/detail.handle
+    events:
+      - http:
+          path: /todos/find/{todoId}
+          cors: true
+          method: get
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+        Resource: "arn:aws:dynamodb:${self.provider.region}:*:table/todos"
+resources:
+  Resources:
+    dbUsers:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        ProvisionedThroughput:
+          WriteCapacityUnits: 5
+          ReadCapacityUnits: 5
+        TableName: users
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+    dbTodos:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        ProvisionedThroughput:
+          WriteCapacityUnits: 5
+          ReadCapacityUnits: 5
+        TableName: todos
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
